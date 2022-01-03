@@ -119,8 +119,8 @@ class Scenic(db.Model):
 
     # # 设置外键
     # area_id = db.Column(db.Integer, db.ForeignKey('area.id'))  # 所属标签
-    # addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
-    # collect = db.relationship("Collect", backref='scenic')  # 收藏外键关系关联
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
+    collect = db.relationship("Collect", backref='scenic')  # 收藏外键关系关联
     # travels = db.relationship("Travels", backref='scenic')  # 游记外键关系关联
 
     def __repr__(self):
