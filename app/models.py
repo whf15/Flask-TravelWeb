@@ -29,66 +29,66 @@ class User(db.Model):
         return check_password_hash(self.pwd, pwd)
 
 # # 管理员
-# class Admin(db.Model):
-#     __tablename__ = "admin"
-#     __table_args__ = {"useexisting": True}
-#     id = db.Column(db.Integer, primary_key=True)  # 编号
-#     name = db.Column(db.String(100), unique=True)  # 管理员账号
-#     pwd = db.Column(db.String(100))  # 管理员密码
-#     adminlogs = db.relationship("Adminlog", backref='admin')  # 管理员登录日志外键关系关联
-#     oplogs = db.relationship("Oplog", backref='admin')  # 管理员操作日志外键关系关联
+class Admin(db.Model):
+    __tablename__ = "admin"
+    __table_args__ = {"useexisting": True}
+    id = db.Column(db.Integer, primary_key=True)  # 编号
+    name = db.Column(db.String(100), unique=True)  # 管理员账号
+    pwd = db.Column(db.String(100))  # 管理员密码
+    adminlogs = db.relationship("Adminlog", backref='admin')  # 管理员登录日志外键关系关联
+    oplogs = db.relationship("Oplog", backref='admin')  # 管理员操作日志外键关系关联
 
-#     def __repr__(self):
-#         return "<Admin %r>" % self.name
+    def __repr__(self):
+        return "<Admin %r>" % self.name
 
-#     def check_pwd(self, pwd):
-#         """
-#         检测密码是否正确
-#         :param pwd: 密码
-#         :return: 返回布尔值
-#         """
-#         from werkzeug.security import check_password_hash
-#         return check_password_hash(self.pwd, pwd)
+    def check_pwd(self, pwd):
+        """
+        检测密码是否正确
+        :param pwd: 密码
+        :return: 返回布尔值
+        """
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
 
 
 # # 管理员登录日志
-# class Adminlog(db.Model):
-#     __tablename__ = "adminlog"
-#     __table_args__ = {"useexisting": True}
-#     id = db.Column(db.Integer, primary_key=True)  # 编号
-#     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
-#     ip = db.Column(db.String(100))  # 登录IP
-#     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
+class Adminlog(db.Model):
+    __tablename__ = "adminlog"
+    __table_args__ = {"useexisting": True}
+    id = db.Column(db.Integer, primary_key=True)  # 编号
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
+    ip = db.Column(db.String(100))  # 登录IP
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
 
-#     def __repr__(self):
-#         return "<Adminlog %r>" % self.id
+    def __repr__(self):
+        return "<Adminlog %r>" % self.id
 
 
 # # 操作日志
-# class Oplog(db.Model):
-#     __tablename__ = "oplog"
-#     __table_args__ = {"useexisting": True}
-#     id = db.Column(db.Integer, primary_key=True)  # 编号
-#     admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
-#     ip = db.Column(db.String(100))  # 操作IP
-#     reason = db.Column(db.String(600))  # 操作原因
-#     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
+class Oplog(db.Model):
+    __tablename__ = "oplog"
+    __table_args__ = {"useexisting": True}
+    id = db.Column(db.Integer, primary_key=True)  # 编号
+    admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'))  # 所属管理员
+    ip = db.Column(db.String(100))  # 操作IP
+    reason = db.Column(db.String(600))  # 操作原因
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 登录时间
 
-#     def __repr__(self):
-#         return "<Oplog %r>" % self.id
+    def __repr__(self):
+        return "<Oplog %r>" % self.id
 
 # 地区
-# class Area(db.Model):
-#     __tablename__ = "area"
-#     id = db.Column(db.Integer, primary_key=True)  # 编号
-#     name = db.Column(db.String(100), unique=True)  # 标题
-#     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加景区时间
-#     is_recommended = db.Column(db.Boolean(), default=0) # 是否推荐
-#     introduction = db.Column(db.Text)           # 景区简介
-#     scenic = db.relationship("Scenic", backref='area')  # 外键关系关联
+class Area(db.Model):
+    __tablename__ = "area"
+    id = db.Column(db.Integer, primary_key=True)  # 编号
+    name = db.Column(db.String(100), unique=True)  # 标题
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加景区时间
+    is_recommended = db.Column(db.Boolean(), default=0) # 是否推荐
+    introduction = db.Column(db.Text)           # 景区简介
+    scenic = db.relationship("Scenic", backref='area')  # 外键关系关联
 
-#     def __repr__(self):
-#         return "<Area %r>" % self.name
+    def __repr__(self):
+        return "<Area %r>" % self.name
 
 # # 会员登录日志
 class Userlog(db.Model):
@@ -118,23 +118,23 @@ class Scenic(db.Model):
     is_recommended = db.Column(db.Boolean(), default=0) # 是否推荐
 
     # # 设置外键
-    # area_id = db.Column(db.Integer, db.ForeignKey('area.id'))  # 所属标签
+    area_id = db.Column(db.Integer, db.ForeignKey('area.id'))  # 所属标签
     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
     collect = db.relationship("Collect", backref='scenic')  # 收藏外键关系关联
-    # travels = db.relationship("Travels", backref='scenic')  # 游记外键关系关联
+    travels = db.relationship("Travels", backref='scenic')  # 游记外键关系关联
 
     def __repr__(self):
         return "<Scenic %r>" % self.title
 
 # 游记
-# class Travels(db.Model):
-#     __tablename__ = "travels"
-#     id = db.Column(db.Integer, primary_key=True)  # 编号
-#     title = db.Column(db.String(255),unique=True) # 标题
-#     author = db.Column(db.String(255))      # 作者
-#     content = db.Column(db.Text)           # 游记内容
-#     scenic_id = db.Column(db.Integer, db.ForeignKey('scenic.id'))  # 所属景区
-#     addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
+class Travels(db.Model):
+    __tablename__ = "travels"
+    id = db.Column(db.Integer, primary_key=True)  # 编号
+    title = db.Column(db.String(255),unique=True) # 标题
+    author = db.Column(db.String(255))      # 作者
+    content = db.Column(db.Text)           # 游记内容
+    scenic_id = db.Column(db.Integer, db.ForeignKey('scenic.id'))  # 所属景区
+    addtime = db.Column(db.DateTime, index=True, default=datetime.now)  # 添加时间
 
 
 # 收藏
