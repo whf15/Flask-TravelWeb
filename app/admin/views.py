@@ -5,7 +5,7 @@ from datetime import datetime
 from app import db
 from . import admin
 from flask import render_template, redirect, url_for, flash, session, request, g, abort,make_response,current_app
-from app.admin.forms import LoginForm,PwdForm
+from app.admin.forms import LoginForm,PwdForm,AreaForm,ScenicForm,TravelsForm
 from app.models import Admin,Adminlog,Oplog,Userlog,Area,User,Suggestion,Scenic,Travels
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_ , and_
