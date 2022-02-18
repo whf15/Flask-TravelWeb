@@ -107,3 +107,171 @@ def pwd():
     return render_template("admin/pwd.html", form=form)
 
 
+'''
+会员的增删查改
+'''
+@admin.route("/user/list/", methods=["GET"])
+@admin_login
+def user_list():
+    """
+    会员列表
+    """
+    page = request.args.get('page', 1, type=int) # 获取page参数值 
+    keyword = request.args.get('keyword', '', type=str)
+
+    if keyword:
+        # 根据姓名或者邮箱查询
+        filters = or_(User.username == keyword, User.email == keyword)
+        page_data = User.query.filter(filters).order_by(
+            User.addtime.desc()
+        ).paginate(page=page, per_page=5)
+    else:
+        page_data = User.query.order_by(
+            User.addtime.desc()
+        ).paginate(page=page, per_page=5)
+
+    return render_template("admin/user_list.html", page_data=page_data)
+
+@admin.route("/user/view/<int:id>/", methods=["GET"])
+@admin_login
+def user_view(id=None):
+    """
+    查看会员详情
+    """
+    from_page = request.args.get('fp')
+    if not from_page:
+        from_page = 1
+    user = User.query.get_or_404(int(id))
+    return render_template("admin/user_view.html", user=user, from_page=from_page)
+
+@admin.route("/user/del/<int:id>/", methods=["GET"])
+@admin_login
+def user_del(id=None):
+    """
+    删除会员
+    """
+    page = request.args.get('page',1,type=int)
+    user = User.query.get_or_404(int(id))
+    db.session.delete(user)
+    db.session.commit()
+    addOplog("删除会员"+user.name)  # 添加日志
+    flash("删除会员成功！", "ok")
+    return redirect(url_for('admin.user_list', page=page))
+
+'''意见的收集'''
+
+@admin.route("/suggestion_list/list/", methods=["GET"])
+@admin_login
+def suggestion_list():
+    """
+    意见建议列表
+    """
+    page = request.args.get('page', 1, type=int) # 获取page参数值
+    page_data = Suggestion.query.order_by(
+        Suggestion.addtime.desc()
+    ).paginate(page=page, per_page=5)
+    return render_template("admin/suggestion_list.html", page_data=page_data)
+
+@admin.route("/suggestion/del/<int:id>/", methods=["GET"])
+@admin_login
+def suggestion_del(id=None):
+    """
+    删除意见
+    """
+    page = request.args.get('page',1,type=int)
+    suggestion = Suggestion.query.get_or_404(int(id))
+    db.session.delete(suggestion)
+    db.session.commit()
+    addOplog("删除意见建议" )  # 添加日志
+    flash("删除成功！", "ok")
+    return redirect(url_for('admin.suggestion_list', page=page))
+
+# 地区相关
+@admin.route('/area/add/',methods=["GET","POST"])
+@admin_login
+def area_add():
+    """
+    添加地区
+    """
+    form = AreaForm()
+    if form.validate_on_submit():
+        data = form.data # 接收数据
+        area = Area.query.filter_by(name=data["name"]).count()
+        # 说明已经有这个地区了
+        if area == 1:
+            flash("地区已存在", "err")
+            return redirect(url_for("admin.area_add"))
+        area = Area(
+            name=data["name"],     
+            is_recommended = data['is_recommended'],
+            introduction = data['introduction']
+        )
+        db.session.add(area)
+        db.session.commit()
+        addOplog("添加地区"+data["name"])  # 添加日志
+        flash("地区添加成功", "ok")
+        return redirect(url_for("admin.area_add"))
+    return render_template("admin/area_add.html",form=form)
+
+@admin.route("/area/edit/<int:id>", methods=["GET", "POST"])
+@admin_login
+def area_edit(id=None):
+    """
+    地区编辑
+    """
+    form = AreaForm()
+    form.submit.label.text = "修改"
+    area = Area.query.get_or_404(id)
+    if request.method == "GET":
+        form.name.data = area.name
+        form.is_recommended.data = area.is_recommended
+        form.introduction.data = area.introduction
+    if form.validate_on_submit():
+        data = form.data
+        area_count = Area.query.filter_by(name=data["name"]).count()
+        if area.name != data["name"] and area_count == 1:
+            flash("地区已存在", "err")
+            return redirect(url_for("admin.area_edit", id=area.id))
+        area.name = data["name"]
+        area.is_recommended = int(data["is_recommended"])
+        area.introduction = data["introduction"]
+        db.session.add(area)
+        db.session.commit()
+        flash("地区修改成功", "ok")
+        return redirect(url_for("admin.area_edit", id=area.id))
+    return render_template("admin/area_edit.html", form=form, area=area)
+
+@admin.route("/area/list/", methods=["GET"])
+@admin_login
+def area_list():
+    """
+    标签列表
+    """
+    name = request.args.get('name',type=str)     # 获取name参数值
+    page = request.args.get('page', 1, type=int) # 获取page参数值   
+    if name: # 搜索功能
+        page_data = Area.query.filter_by(name=name).order_by(
+            Area.addtime.desc()
+        ).paginate(page=page, per_page=5)
+    else:   
+        # 查找数据
+        page_data = Area.query.order_by(
+            Area.addtime.desc()
+        ).paginate(page=page, per_page=5)
+    return render_template("admin/area_list.html", page_data=page_data) # 渲染模板   
+
+
+@admin.route("/area/del/<int:id>/", methods=["GET"])
+@admin_login
+def area_del(id=None):
+    """
+    标签删除
+    """
+    # filter_by在查不到或多个的时候并不会报错，get会报错。
+    area = Area.query.filter_by(id=id).first_or_404()
+    db.session.delete(area)
+    db.session.commit()
+    addOplog("删除地区"+area.name)  # 添加日志
+    flash("地区<<{0}>>删除成功".format(area.name), "ok")
+    return redirect(url_for("admin.area_list"))
+

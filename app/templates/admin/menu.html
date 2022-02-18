@@ -15,4 +15,63 @@
         </ul>
     </li>
     
+    <li class="treeview" id="g-2">
+        <a href="#">
+            <i class="fa fa-users" aria-hidden="true"></i>
+            <span>会员管理</span>
+            <span class="label label-primary pull-right">1</span>
+        </a>
+        <ul class="treeview-menu">
+            <li id="g-2-1">
+                <a href="{{url_for('admin.user_list')}}">
+                    <i class="fa fa-circle-o"></i> 会员列表
+                </a>
+            </li>
+            <li id="g-2-2">
+                <a href="{{url_for('admin.suggestion_list')}}">
+                    <i class="fa fa-circle-o"></i> 意见建议
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li class="treeview" id="g-3">
+        <a href="#">
+            <i class="fa fa-tags" aria-hidden="true"></i>
+            <span>地区管理</span>
+            <span class="label label-primary pull-right">2</span>
+        </a>
+        <ul class="treeview-menu">
+            <li id="g-3-1">
+                <a href="{{ url_for('admin.area_add') }}">
+                    <i class="fa fa-circle-o"></i> 添加地区
+                </a>
+            </li>
+            <li id="g-3-2">
+                <a href="{{ url_for('admin.area_list') }}">
+                    <i class="fa fa-circle-o"></i> 地区列表
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li class="treeview" id="g-4">
+        <a href="#">
+            <i class="fa fa-file-video-o" aria-hidden="true"></i>
+            <span>景区管理</span>
+            <span class="label label-primary pull-right">2</span>
+        </a>
+        <ul class="treeview-menu">
+            <li id="g-4-1">
+                <a href="{{ url_for('admin.scenic_add') }}">
+                    <i class="fa fa-circle-o"></i> 添加景区
+                </a>
+            </li>
+            <li id="g-4-2">
+                <a href="{{ url_for('admin.scenic_list') }}">
+                    <i class="fa fa-circle-o"></i> 景区列表
+                </a>
+            </li>
+        </ul>
+    </li>
 </ul>

@@ -19,6 +19,9 @@
             vertical-align:middle;
             text-align:center;
         }
+        .logo-lg{
+            font-size: 18px;
+        }
     </style>
     {% block css %} {% endblock %}
 </head>
@@ -26,7 +29,7 @@
 <div class="wrapper">
     <header class="main-header">
        <a href="{{ url_for('admin.index') }}" class="logo">
-            <span class="logo-lg"><img src="{{ url_for('static',filename='base/images/logo.png') }}" style="height:40px;width:40px;">大学生出游网站后台管理系统</span>
+            <span class="logo-lg"><img src="{{ url_for('static',filename='base/images/logo.png') }}" style="height:20px;width:20px;">出游网站后台管理系统</span>
         </a>
         <nav class="navbar navbar-static-top">
             <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
@@ -94,7 +97,7 @@
     <!--内容-->
     </div>
     <footer class="main-footer">
-        <strong>版权 &copy; 2007-2018 归<a href="http://www.mingrisoft.com">明日科技</a>.</strong> 所有
+        <strong>版权 &copy; 2021-2022 归<a href="https://github.com/whf15">whf15</a>.</strong> 所有
     </footer>
     <div class="control-sidebar-bg"></div>
 </div>
