@@ -87,3 +87,19 @@ def index():
     scenic = Scenic.query.filter_by(is_hot = 1).all() # 热门景区
     return render_template('home/index.html',area=area,hot_area=hot_area,scenic=scenic) # 渲染模板
 
+@home.route("/info/<int:id>/")
+def info(id=None):  # id 为景区ID
+    """
+    详情页
+    """
+    scenic = Scenic.query.get_or_404(int(id)) # 根据景区ID获取景区数据，如果不存在返回404
+    user_id = session.get('user_id',None)    # 获取用户ID,判断用户是否登录
+    if user_id :                              # 如果已经登录
+        count = Collect.query.filter_by(      # 根据用户ID和景区ID判断用户是否已经收藏该景区
+            user_id =int(user_id),
+            scenic_id=int(id)
+        ).count()
+    else :                                    # 用户未登录状态
+        user_id = 0
+        count = 0    
+    return render_template('home/info.html',scenic=scenic,user_id=user_id,count=count)   # 渲染模板
