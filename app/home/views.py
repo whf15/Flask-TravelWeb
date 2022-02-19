@@ -103,3 +103,30 @@ def info(id=None):  # id 为景区ID
         user_id = 0
         count = 0    
     return render_template('home/info.html',scenic=scenic,user_id=user_id,count=count)   # 渲染模板
+
+@home.route("/about/")
+def about():
+    """
+    关于我们
+    """
+    return render_template('home/about.html')
+
+@home.route("/contact/",methods=["GET", "POST"])
+def contact():
+    """
+    联系我们
+    """
+    form = SuggetionForm()              # 实例化SuggestionForm类
+    if form.validate_on_submit():       # 判断用户是否提交表单
+        data = form.data                # 接收用户提交的数据
+        # 为属性赋值
+        suggestion = Suggestion(
+            name = data["name"],
+            email=data["email"],
+            content = data["content"],
+        )
+        db.session.add(suggestion)       # 添加数据
+        db.session.commit()              # 提交数据
+        flash("发送成功！", "ok")        # 用flask存储发送成功消息
+        form.content.data = ''           # 设置内容为空
+    return render_template('home/contact.html',form=form) # 渲染模板，并传递表单数据
