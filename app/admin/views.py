@@ -563,3 +563,34 @@ def oplog_list():
     return render_template("admin/oplog_list.html", page_data=page_data)
 
 
+@admin.route("/adminloginlog/list/", methods=["GET"])
+@admin_login
+def adminloginlog_list(page=None):
+    """
+    管理员登录日志
+    """
+    page = request.args.get('page',1,type=int) # 获取page参数值
+    page_data = Adminlog.query.join(
+        Admin
+    ).filter(
+        Admin.id == Adminlog.admin_id,
+    ).order_by(
+        Adminlog.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/adminloginlog_list.html", page_data=page_data)
+
+@admin.route("/userloginlog/list/", methods=["GET"])
+@admin_login
+def userloginlog_list(page=None):
+    """
+    会员登录日志列表
+    """
+    page = request.args.get('page', 1, type=int)  # 获取page参数值
+    page_data = Userlog.query.join(
+        User
+    ).filter(
+        User.id == Userlog.user_id,
+    ).order_by(
+        Userlog.addtime.desc()
+    ).paginate(page=page, per_page=5)
+    return render_template("admin/userloginlog_list.html", page_data=page_data)

@@ -113,6 +113,7 @@ def about():
 
 @home.route("/contact/",methods=["GET", "POST"])
 def contact():
+
     """
     联系我们
     """
@@ -130,3 +131,92 @@ def contact():
         flash("发送成功！", "ok")        # 用flask存储发送成功消息
         form.content.data = ''           # 设置内容为空
     return render_template('home/contact.html',form=form) # 渲染模板，并传递表单数据
+
+
+@home.route("/search/")
+def search():
+    """
+    搜素功能
+    """
+    page = request.args.get('page', 1, type=int) # 获取page参数值 
+    area = Area.query.all()    # 获取所有城市
+    area_id = request.args.get('area_id',type=int)  # 地区
+    star = request.args.get('star',type=int)        # 星级
+
+    if area_id or star :    # 根据星级搜索景区
+        filters = and_(Scenic.area_id==area_id,Scenic.star==star)
+        page_data = Scenic.query.filter(filters).paginate(page=page, per_page=6)
+    else :                  # 搜索全部景区    
+        page_data = Scenic.query.paginate(page=page, per_page=3)
+    return render_template('home/search.html',page_data=page_data,area=area,area_id=area_id,star=star)
+
+'''
+游记
+'''
+@home.route("/travels/<int:id>/")
+def travels(id=None):
+    """
+    详情页
+    """
+    travels = Travels.query.get_or_404(int(id))
+    return render_template('home/travels.html',travels=travels) 
+
+
+'''
+景区相关
+'''
+@home.route("/collect_add/")
+@user_login
+def collect_add():
+    """
+    收藏景区
+    """
+    scenic_id = request.args.get("scenic_id", "")  # 接收传递的参数scenic_id
+    user_id   = session['user_id']                  # 获取当前用户的ID
+    collect = Collect.query.filter_by(              # 根据用户ID和景区ID判断是否该收藏
+        user_id =int(user_id),
+        scenic_id=int(scenic_id)
+    ).count()
+    # 已收藏
+    if collect == 1:
+        data = dict(ok=0)     # 写入字典
+    # 未收藏进行收藏
+    if collect == 0:
+        collect = Collect(
+            user_id =int(user_id),
+            scenic_id=int(scenic_id)
+        )
+        db.session.add(collect)  # 添加数据
+        db.session.commit()      # 提交数据
+        data = dict(ok=1)        # 写入字典
+    import json                 # 导入模块
+    return json.dumps(data)     # 返回json数据
+
+@home.route("/collect_cancel/")
+@user_login
+def collect_cancel():
+    """
+    收藏景区
+    """
+    id = request.args.get("id", "")    # 获取景区ID
+    user_id = session["user_id"]       # 获取当前用户ID
+    collect = Collect.query.filter_by(id=id,user_id=user_id).first() # 查找Collect表，查看记录是否存在
+    if collect :                      # 如果存在
+        db.session.delete(collect)     # 删除数据
+        db.session.commit()             # 提交数据
+        data = dict(ok=1)               # 写入字典
+    else :
+        data = dict(ok=-1)           # 写入字典
+    import json                     # 引入json模块
+    return json.dumps(data)         # 输出json格式
+
+
+@home.route("/collect_list/")
+@user_login
+def collect_list():
+    page = request.args.get('page', 1, type=int) # 获取page参数值
+    # 根据user_id删选Collect表数据
+    page_data = Collect.query.filter_by(user_id = session['user_id']).order_by(
+        Collect.addtime.desc()
+    ).paginate(page=page, per_page=3)                                     # 使用分页方法
+    return render_template('home/collect_list.html',page_data=page_data) # 渲染模板
