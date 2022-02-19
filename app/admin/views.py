@@ -405,3 +405,161 @@ def scenic_del(id=None):
     flash("景区删除成功", "ok")           # 使用flash存储成功信息
     addOplog("删除景区"+scenic.title)  # 添加日志
     return redirect(url_for('admin.scenic_list', page=1)) # 渲染模板
+
+
+'''
+游记相关操作
+'''
+
+@admin.route("/travels/add/", methods=["GET", "POST"])
+@admin_login
+def travels_add():
+    """
+    添加游记
+    """
+    form = TravelsForm()
+    form.scenic_id.choices = [(v.id, v.title) for v in Scenic.query.all()]
+    if form.validate_on_submit():
+        data = form.data
+        # 判断游记是否存在    
+        travels_count = Travels.query.filter_by(title=data["title"]).count()        
+        # 判断是否有重复数据。
+        if travels_count == 1 :
+            flash("景点已经存在！", "err")
+            return redirect(url_for('admin.travels_add'))
+        travels = Travels(
+            title=data["title"],
+            author = data["author"],
+            scenic_id = data["scenic_id"],
+            content=data["content"],
+        )
+        db.session.add(travels)
+        db.session.commit()
+        addOplog("添加游记"+data["title"])  # 添加日志
+        flash("添加游记成功！", "ok")
+        return redirect(url_for('admin.travels_add'))
+    return render_template("admin/travels_add.html", form=form)
+
+@admin.route("/travels/list/", methods=["GET"])
+@admin_login
+def travels_list():
+    """
+    游记列表页面
+    """
+    keywords = request.args.get('keywords','',type=str) 
+    page = request.args.get('page', 1, type=int) # 获取page参数值
+    if keywords :
+        # 使用like实现模糊查询
+        page_data = Travels.query.filter(Travels.title.like("%"+keywords+"%")).order_by(
+            Travels.addtime.desc()
+        ).paginate(page=page, per_page=5)
+    else :
+        page_data = Travels.query.order_by(
+            Travels.addtime.desc()
+        ).paginate(page=page, per_page=5)
+    return render_template("admin/travels_list.html", page_data=page_data)
+
+
+@admin.route("/travels/edit/<int:id>/", methods=["GET", "POST"])
+@admin_login
+def travels_edit(id=None):
+    """
+    编辑游记
+    """
+    form = TravelsForm()
+    form.scenic_id.choices = [(v.id, v.title) for v in Scenic.query.all()]
+    form.submit.label.text = "修改"
+    travels = Travels.query.get_or_404(int(id))
+    if request.method == "GET":
+        form.scenic_id.data = travels.scenic_id
+        form.content.data = travels.content
+    if form.validate_on_submit():
+        data = form.data
+        travels_count = Travels.query.filter_by(title=data["title"]).count()        
+        # 判断是否有重复数据
+        if travels_count == 1 and travels.title != data["title"]:
+            flash("游记已经存在！", "err")
+            return redirect(url_for('admin.travels_edit', id=id))
+   
+        travels.title = data["title"]    
+        travels.scenic_id = data["scenic_id"]
+        travels.author = data["author"]
+        travels.content = data["content"]
+
+        db.session.add(travels)
+        db.session.commit()
+        flash("修改景区成功！", "ok")
+        return redirect(url_for('admin.travels_edit', id=id))
+    return render_template("admin/travels_edit.html", form=form, travels=travels)
+
+@admin.route("/travels/del/<int:id>/", methods=["GET"])
+@admin_login
+def travels_del(id=None):
+    """
+    游记删除
+    """
+    travels = Travels.query.get_or_404(id)
+    db.session.delete(travels)
+    db.session.commit()
+    flash("游记删除成功", "ok")
+    addOplog("删除游记"+travels.title)  # 添加日志
+    return redirect(url_for('admin.travels_list', page=1))
+
+
+@admin.route('/ckupload/', methods=['POST', 'OPTIONS'])
+@admin_login
+def ckupload():
+    """CKEditor 文件上传"""
+    error = ''
+    url = ''
+    callback = request.args.get("CKEditorFuncNum")
+
+    if request.method == 'POST' and 'upload' in request.files:
+        fileobj = request.files['upload']
+        fname, fext = os.path.splitext(fileobj.filename)
+        rnd_name = '%s%s' % (gen_rnd_filename(), fext)
+
+        filepath = os.path.join(current_app.static_folder, 'uploads/ckeditor', rnd_name)
+        print(filepath)
+        # 检查路径是否存在，不存在则创建
+        dirname = os.path.dirname(filepath)
+        if not os.path.exists(dirname):
+            try:
+                os.makedirs(dirname)
+            except:
+                error = 'ERROR_CREATE_DIR'
+        elif not os.access(dirname, os.W_OK):
+            error = 'ERROR_DIR_NOT_WRITEABLE'
+
+        if not error:
+            fileobj.save(filepath)
+            url = url_for('static', filename='%s/%s' % ('uploads/ckeditor', rnd_name))
+    else:
+        error = 'post error'
+
+    res = """<script type="text/javascript">
+            window.parent.CKEDITOR.tools.callFunction(%s, '%s', '%s');
+            </script>""" % (callback, url, error)
+
+    response = make_response(res)
+    response.headers["Content-Type"] = "text/html"
+    return response
+
+
+@admin.route("/oplog/list/", methods=["GET"])
+@admin_login
+def oplog_list():
+    """
+    操作日志管理
+    """
+    page = request.args.get('page', 1, type=int) # 获取page参数值
+    page_data = Oplog.query.join(
+        Admin
+    ).filter(
+        Admin.id == Oplog.admin_id,
+    ).order_by(
+        Oplog.addtime.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template("admin/oplog_list.html", page_data=page_data)
+
+

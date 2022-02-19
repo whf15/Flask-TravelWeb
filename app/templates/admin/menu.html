@@ -74,4 +74,41 @@
             </li>
         </ul>
     </li>
+
+    <li class="treeview" id="g-5">
+        <a href="#">
+            <i class="fa fa-book" aria-hidden="true"></i>
+            <span>游记管理</span>
+            <span class="label label-primary pull-right">2</span>
+        </a>
+        <ul class="treeview-menu">
+            <li id="g-5-1">
+                <a href="{{ url_for('admin.travels_add') }}">
+                    <i class="fa fa-circle-o"></i> 添加游记
+                </a>
+            </li>
+            <li id="g-5-2">
+                <a href="{{ url_for('admin.travels_list') }}">
+                    <i class="fa fa-circle-o"></i> 游记列表
+                </a>
+            </li>
+        </ul>
+    </li>
+
+    <li class="treeview"  id="g-8">
+        <a href="#">
+            <i class="fa fa-file-text" aria-hidden="true"></i>
+            <span>日志管理</span>
+            <span class="label label-primary pull-right">3</span>
+        </a>
+        <ul class="treeview-menu">
+            <li  id="g-8-1">
+                <a href="{{url_for('admin.oplog_list')}}">
+                    <i class="fa fa-circle-o"></i> 操作日志列表
+                </a>
+            </li>
+            
+        </ul>
+    </li>
+
 </ul>
